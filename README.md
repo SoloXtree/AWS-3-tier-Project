@@ -169,23 +169,63 @@ cd prometheus-2.45.0.linux-amd64
 # Edit prometheus.yml
 nano prometheus.yml
 ```
+### prometheus confi.yaml
 
+```path
+/etc/prometheus/prometheus.yml
+```
 ```yaml
 global:
   scrape_interval: 15s
+  evaluation_interval: 15s
 
 scrape_configs:
-  - job_name: 'frontend-ec2'
-    static_configs:
-      - targets: ['FRONTEND-PRIVATE-IP:9100']
 
-  - job_name: 'backend-ec2'
+  # Prometheus self monitoring
+  - job_name: "prometheus"
     static_configs:
-      - targets: ['BACKEND-PRIVATE-IP:9100']
+      - targets: ["localhost:9090"]
 
-  - job_name: 'flask-app'
-    static_configs:
-      - targets: ['BACKEND-PRIVATE-IP:5000']
+
+  # Frontend EC2 Node Exporter
+  - job_name: "frontend-ec2"
+
+    ec2_sd_configs:
+      - region: eu-west-2
+        port: 9100
+
+    relabel_configs:
+      - source_labels: [__meta_ec2_tag_Monitor]
+        action: keep
+        regex: frontend
+
+
+  # Backend EC2 Node Exporter
+  - job_name: "backend-ec2"
+
+    ec2_sd_configs:
+      - region: eu-west-2
+        port: 9100
+
+    relabel_configs:
+      - source_labels: [__meta_ec2_tag_Monitor]
+        action: keep
+        regex: backend
+
+
+  # Backend Flask Application Metrics
+  - job_name: "backend-flask"
+
+    ec2_sd_configs:
+      - region: eu-west-2
+        port: 5000
+
+    metrics_path: /metrics
+
+    relabel_configs:
+      - source_labels: [__meta_ec2_tag_Monitor]
+        action: keep
+        regex: backend
 ```
 
 ```bash
@@ -196,6 +236,19 @@ nohup ./prometheus --config.file=prometheus.yml > prometheus.log 2>&1 &
 sudo yum install grafana -y
 sudo systemctl start grafana-server
 sudo systemctl enable grafana-server
+```
+---
+### ADD IAM Role Prometheus EC2
+
+```JSON
+{
+ "Effect": "Allow",
+ "Action": [
+   "ec2:DescribeInstances",
+   "ec2:DescribeTags"
+ ],
+ "Resource": "*"
+}
 ```
 
 ---
