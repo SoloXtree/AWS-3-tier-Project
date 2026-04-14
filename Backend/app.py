@@ -27,10 +27,10 @@ REQUEST_LATENCY = Histogram(
 # -----------------------------
 
 db_config = {
-    "host": "vky.czwou6k42ebc.eu-west-2.rds.amazonaws.com",
-    "user": "admin",
-    "password": "15406578",
-    "database": "vky1"
+    "host": "vky.czwou6k42ebc.eu-west-2.rds.amazonaws.com", #Replace your RDS endpoint
+    "user": "admin", 
+    "password": "15406578", # Your password 
+    "database": "vky1" # Your database name
 }
 
 # -----------------------------
